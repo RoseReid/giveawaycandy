@@ -1,0 +1,1 @@
+exports.serialPort = '/dev/serial/by-id/usb-SparkFun_Electronics_SparkFun_ProMicro5-if00';
