@@ -21,7 +21,7 @@ var startTelnetServer = function(action){
 };
 
 
-var serialport = new serialport.SerialPort(config.serialPort,
+var serialPort = new serialport.SerialPort(config.serialPort,
 			{//Listening on the serial port for data coming from Arduino over USB
 				baudRate: 57600,
 				parser: serialport.parsers.readline('\n')
@@ -29,14 +29,14 @@ var serialport = new serialport.SerialPort(config.serialPort,
 
 
 var giveMeCandy = function(client){
-	serialPort.write("ls\n", function(err, results) {
+	serialPort.write("give", function(err, results) {
     console.log('err ' + err);
     console.log('results ' + results);
     client.end();
   });  
 };
 
-serialport.open(function () {
+serialPort.open(function () {
   console.log('open');
   startTelnetServer(giveMeCandy);
 });
