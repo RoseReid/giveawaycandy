@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var twitter = require('ntwitter'),
      querystring = require('querystring'),
      http = require('http'),

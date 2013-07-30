@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var net = require('net'),
  serialport = require('serialport'),
  config = require('./config');
