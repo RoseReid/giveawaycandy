@@ -10,8 +10,7 @@ void setup() {
 
 
 void loop(){
-  if (Serial.available()) {
-     Serial.find("give");
+  if (Serial.find("give")) {
      releaseCandy();
   }
   
