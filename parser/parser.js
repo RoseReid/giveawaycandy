@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 
 var twitter = require('ntwitter'),
+    //library to handle querystring
      querystring = require('querystring'),
      http = require('http'),
+     //net is for tcp (tcp is a network protocol) Http uses tcp. Http a layer above tcp
      net = require('net'),
+     //configs for the application- twitter accounts/logins/URL's etc'
      config = require('./config');
 
+//ntweet lib to listen to twitterstream
 var twit = new twitter(config.twitterSettings);
 
 
-
+//Regular expressions (RegEx- what the tweets should contain)
 var matchSidpiraya1 = /\s*give\s+\@sidpiraya\s+candy\s*/
     ,matchSidpiraya2 = /\s*\@sidpiraya\s+.*#?candy\s*/
     ,matchMacke1 =  /\s*give\s+\@_macke_\s+candy\s*/
@@ -17,6 +21,7 @@ var matchSidpiraya1 = /\s*give\s+\@sidpiraya\s+candy\s*/
     ,matchHattrick = /.*thank[s]*\s+.*\@hattrick.*/
     ,stillAlive = /\s*\@slickstreamer\s+\d{10}\.0 alive message\s*/
 
+//
 var storeGiverHTTPHeader = {
     host: config.host,
     port: 80,
@@ -26,23 +31,29 @@ var storeGiverHTTPHeader = {
         'Content-Type': 'application/json'
     }
 };
-
+//StoreGiver is the place to log who have given candy to an external server
 var storeGiver = function(tweet, system){
     var giver = { 'type':'stream','system':system, 'content':tweet };
 	console.log(JSON.stringify(giver));
-	var req = http.request(storeGiverHTTPHeader, function(res) {
-		    res.setEncoding('utf8');
+    //setting up a plain http request 
+    //Storegiverheader - what it should call. 
+    //Callback is the response from the server after the request
+	var req = http.request(storeGiverHTTPHeader, function(res) { //create req
+        //utf8 encoding for text (how many bites each character is)
+		    res.setEncoding('utf8');  //set up
+            //listening on data- just console logging it.
 		    res.on('data', function (chunk) {
 		        console.log("body: " + chunk);
 		    });
 		});
 
-		req.write(JSON.stringify(giver));
-		req.end();
+		req.write(JSON.stringify(giver)); //formatting the data to json to send to server
+		req.end();//Done with the call //when server receives then do the callback (res)
 
 };
 
 var releaseCandy = function(){
+    //Setting up a TCP client on port 5000 
 	var client = net.connect({port: 50000},
     	function() { 
   			console.log('client connected');
@@ -52,6 +63,7 @@ var releaseCandy = function(){
 			    console.log("error connecting to tellnetserver");
 	    		console.log(error);
 	  	}).
+          //Logging the connection
 		on("connection", function (socket) {
 	 		socket.on("data", function (data) {
 	    		console.log(data);
@@ -65,7 +77,7 @@ var releaseCandy = function(){
 
 var doGive = function(tweet, system){
 	storeGiver(tweet, system);
-	releaseCandy();
+	releaseCandy();//Call to release the Candy
 	releaseCandy();
 };
 
@@ -95,20 +107,27 @@ var sendAliveMessage = function(){
 
 
 var giveCandy = function(tweet){
+    //if the tweet is containing any of the text in the regEx 
 	if( matchSidpiraya1.test(tweet.text) || matchSidpiraya2.test(tweet.text)
 		|| matchMacke1.test(tweet.text) || matchMacke2.test(tweet.text)){
+            //send tweet data
 		doGive(tweet,"giveawaycandy");
+        //If hattrick is one that is mentioned
 	}else if(matchHattrick.test(tweet.text)){
 	    doGive(tweet, "hattrick");
+        //Sending a heartbeat to see if everything is rnnning as it should
 	}else if(stillAlive.test(tweet.text)){
 		sendAliveMessage();
 	}
 };
+//Go to DoGive*****
 
-
-
+//setting up what to listen to and track on twitter
+//track mentin of specific users
 twit.stream('statuses/filter', {track:'@sidpiraya,@hattrick,@slickstreamer,@_macke_'}, function(stream) {
+  //Will be called when we get any of the above mentions in the twitter stream
   stream.on('data', function (data) {
+      //give candy function
   	giveCandy(data);
     console.log(data);
   });
@@ -186,7 +205,7 @@ var test = { text: 'give @sidpiraya candy',
   giveCandy(test);
 
 */
-
+//exception handler
 process.on('uncaughtException', function(err){
 	console.log('Something bad happened: ');
 	console.log(err);

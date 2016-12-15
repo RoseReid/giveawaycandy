@@ -6,14 +6,16 @@ var net = require('net'),
 
 var serialPort;
 
-
+//This is telnet Server that listens to incoming connections and will make a call to the Arduino to move the ServerMotor the Candy
 var startTelnetServer = function(action){
+	//Anytime a new connection is called- the code will run
 	var server = net.createServer(function(client) { //'connection' listener
 	  console.log('server connected');
 	  client.on('end', function() {
 	    console.log('server disconnected');
 	  });
 	  client.write('hello\r\n');
+		//run the action called the function giveMeCandy
 	  action(client);
 
 	});
@@ -29,7 +31,7 @@ var serialPort = new serialport.SerialPort(config.serialPort,
 				parser: serialport.parsers.readline('\n')
 			},false);
 
-
+//Talk to the Arduino and write Give- And arduino will listen to that and release Candy
 var giveMeCandy = function(client){
 	serialPort.write("give", function(err, results) {
     console.log('err ' + err);
@@ -38,9 +40,12 @@ var giveMeCandy = function(client){
   });  
 };
 
+//Open the serial port which speaks to the Arduino
 serialPort.open(function () {
+	//When the connection to the Arduino is done- We start the Teleserver to listen on incoming traffic
   console.log('open');
   startTelnetServer(giveMeCandy);
+	//giveMeCandy Callback
 });
 
 
